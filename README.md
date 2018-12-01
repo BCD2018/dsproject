@@ -1,2 +1,2 @@
 # dsproject
-de project
+ds project
