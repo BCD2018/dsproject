@@ -1,0 +1,129 @@
+<h1 id="introduction">Introduction</h1>
+<ul>
+<li><p><strong>Ethereum and ERC20</strong></p>
+<p>Ethereum is a decentralized platform that runs smart contracts: applications that run exactly as programmed without any possibility of downtime, censorship, fraud or third-party interference</p>
+<p>The ERC20 token is a standard that describes the functions and events that an Ethereum token contract has to implement.</p></li>
+<li><p><strong>Primary token</strong></p>
+<p>I am doing this project on my own. So I will chose networktenxpayTX.txt as my primary token</p></li>
+<li><p><strong>target</strong></p>
+<p>There two main targets in this project.</p>
+<ul>
+<li><p><strong>Find the distribution of #users and #buys and also #users and #sells</strong></p></li>
+<li><p><strong> Design an appropriate layer and compute the correlation between the layer’s feature and the #transactions</strong></p></li>
+</ul></li>
+</ul>
+<h1 id="data">Data</h1>
+<ul>
+<li><p><strong>token file</strong></p>
+<p>In the token file, we have four columns, i.e. fromnodeID, tonodeID, unixtime and tokenamount</p></li>
+<li><p><strong>price file</strong></p>
+<p>In the price file, There are 7 columns, i.e. Date, Open Price, High Price, Low Price, Close Price, Volume, and Market Cap</p>
+<p>Note that we will mainly focus on the Date and the low price</p></li>
+</ul>
+<h1 id="approach">Approach</h1>
+<ul>
+<li><p><strong>Preprocessing</strong> From the website coinmarketcap, I can get the maximum token amount is <span class="math">10<sub>21</sub></span>. Thus I have evidence to filter the outliers</p></li>
+<li><p><strong>Distribution of #users and #buys</strong></p>
+<ul>
+<li><p><strong>Number of Buys Versus Number of Users</strong></p>
+<p><img src="buys_diagram" alt="image" /></p></li>
+<li><p><strong>Distribution</strong></p>
+<ul>
+<li><p><strong>Discrete Distribution</strong></p>
+<p>The data we are dealing with has a large number of trials(number of users) and the probability of users has the same frequency is not very high. So I will assume it satisfies the Possion distribution.</p>
+<p>since Possion distribution has the same mean and variance. Thus I can compute:</p>
+<p><span class="math"><em>μ</em> = 748</span></p>
+<p><span class="math"><em>σ</em> = 45063955</span></p>
+<p>So it has a huge difference, which means the Poisson model would not be a good representation.</p></li>
+<li><p><strong>Continuous Distribution</strong></p>
+<p>Though we are actually dealing with discrete value. However, if we use a line to link every bar together, we will get a continuous distribution. Looking at the diagram, it looks like a exponential distribution or weibull distribution.</p>
+<ul>
+<li><p><strong>Exponential Distribution parameters Estimation </strong></p>
+<p>Here we use Maximum Log Likelihood to estimate the parameters.</p>
+<p><br /><span class="math">$$\hat{\lambda} = \frac{n}{\sum_{j=1}^{n}x_j}$$</span><br /></p>
+<p><br /><span class="math">$$\hat{\lambda} = \frac{175}{130934} = 748$$</span><br /></p>
+<p>So the PDF will be:</p>
+<p><br /><span class="math"><em>f</em>(<em>x</em>) = <em>λ</em><em>e</em><sup> − <em>λ</em><em>x</em></sup> = 748<em>e</em><sup> − 748<em>x</em></sup></span><br /></p></li>
+<li><p><strong>Weibull Distribution parameters Estimation </strong></p>
+<p>The MLE of Weibull distribution is only numeral solvable, which is out of scope. So I will simply let computer to get the result for me.</p></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li><p><strong>Distribution of #users and #sells</strong></p>
+<ul>
+<li><p><strong>Number of Buys Versus Number of Users</strong></p>
+<p><img src="sells_diagram" alt="image" /></p></li>
+<li><p><strong>Distribution</strong></p>
+<p>Overall, Sell is quite similar to buy. Note that people can only buy but never sell. So there are couples of user have 0 number of sell</p>
+<ul>
+<li><p><strong>Discrete Distribution</strong></p>
+<p>The data we are dealing with has a large number of trials(number of users) and the probability of users has the same frequency is not very high. So I will assume it satifies the Possion distribution.</p>
+<p>since Possion distribution has the same mean and variance. Thus I can compute:</p>
+<p><span class="math"><em>μ</em> = 567</span></p>
+<p><span class="math"><em>σ</em> = 2185739</span></p>
+<p>So it has a huge difference, which means the Poisson model would not be a good representation.</p></li>
+<li><p><strong>Continuous Distribution</strong></p>
+<p>Though we are actually dealing with discrete value. However, if we use a line to link every bar together, we will get a continuous distribution. Looking at the diagram, it looks like a exponential distribution or weibull distribution.</p>
+<ul>
+<li><p><strong>Exponential Distribution parameters Estimation </strong></p>
+<p>Here we use Maximum Log Likelihood to estimate the parameters.</p>
+<p><br /><span class="math">$$\hat{\lambda} = \frac{n}{\sum_{j=1}^{n}x_j}$$</span><br /></p>
+<p><br /><span class="math">$$\hat{\lambda} = \frac{128}{2185739} = 567$$</span><br /></p>
+<p>So the PDF will be:</p>
+<p><br /><span class="math"><em>f</em>(<em>x</em>) = <em>λ</em><em>e</em><sup> − <em>λ</em><em>x</em></sup> = 567<em>e</em><sup> − 567<em>x</em></sup></span><br /></p></li>
+<li><p><strong>Weibull Distribution parameters Estimation </strong></p>
+<p>The MLE of Weibull distribution is only numeral solvable, which is out of scope. So I will simply let computer to get the result for me.</p></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li><p><strong>Layer Design</strong></p>
+<p>In this question, we are aiming to predict the token price using the data we have. An interesting approach is to split the data into different layers (which can have different weights and different features).</p>
+<p>Here we will split the data into 20 layers based on the percentage of maximum amount the transactions involve in. That is, the first layer will contain those date have [0,<span class="math">10<sub>21</sub>/20 = </span>] transactions and the second layer will contain those date have [<span class="math">10<sub>21</sub>/20</span>,<span class="math">10<sub>21</sub>/20 * 2</span>] and so on.</p>
+<p>Thus, we can compute the Pearson Correlation between the price data (in the specific date) and number of transaction (in the same specific date) in the specific <span class="math"><em>i</em><sup><em>t</em><em>h</em></sup></span> layer.</p>
+<p>The result shows that our max Pearson Correlation among all 20 layers is <strong>0.4426604770891175</strong> and the min is <strong>-0.09401985813672055</strong>.</p>
+<p>I then tried to draw the diagram shows the relation between number of transaction and price data of the max Pearson Correlation Layer.</p>
+<p><img src="number_vs_value_best_layer" alt="image" /></p>
+<p>As we can see from the diagram, the red line (price) and the blue line (number of transaction, i.e. feature of the layer) does have strong relation</p></li>
+<li><p><strong>Multi Regression</strong></p>
+<ul>
+<li><p><strong>Analysis</strong></p>
+<p>From the layer design section, we come to know that in some of the layer, number of transaction has a high(0.44) corelation with the price. However, it does not necessary means any causality, nor necessary means the number of transaction is a good feature.</p>
+<p>Therefore, I will do the multi regression to see whether the number of transaction is good feature. In order to augment the feature, I do some transfers of it: square and square root</p></li>
+<li><p><strong>Metric</strong></p>
+<ul>
+<li><p><strong>Residual</strong></p>
+<p><br /><span class="math"><em>ξ</em><sub><em>i</em></sub> = <em>y</em><sub><em>i</em></sub> − <em>ŷ</em><sub><em>i</em></sub></span><br /></p></li>
+<li><p><strong>Coefficient of determination: <span class="math"><em>R</em><sup>2</sup></span></strong></p>
+<p><br /><span class="math">$$R^2 = \frac{SS_R}{SS_T} = 1 - \frac{SS_E}{SS_T}$$</span><br /></p>
+<p>where</p>
+<p><br /><span class="math">$$SS_R = \sum_{i=1}^{n}(\hat{y}_i - \Bar{y})^2$$</span><br /></p>
+<p><br /><span class="math"><em>S</em><em>S</em><sub><em>E</em></sub> = ∑<sub><em>i</em> = 1</sub><sup><em>n</em></sup>(<em>y</em><sub><em>i</em></sub> − <em>ŷ</em><sub><em>i</em></sub>)<sup>2</sup></span><br /></p>
+<p><br /><span class="math"><em>S</em><em>S</em><sub><em>T</em></sub> = <em>S</em><em>S</em><sub><em>R</em></sub> + <em>S</em><em>S</em><sub><em>E</em></sub></span><br /></p></li>
+</ul></li>
+<li><p><strong>Result</strong></p>
+<ul>
+<li><p><strong>Prediction</strong></p>
+<p>We will use the three features in t-1 day to predict the price at day t. I will show the prediction v.s. true price diagram based on the layer with max <span class="math"><em>R</em><sup>2</sup></span> value</p>
+<p><img src="prediction_true_price.png" alt="image" /></p>
+<p>As the diagram shows, the prediction is not very good (in terms of residual and <span class="math"><em>R</em><sup>2</sup></span>). That’s reasonable since the maximum is only <span class="math"><em>R</em><sup>2</sup></span>=<strong>0.332810699</strong>. On the other hand, our feature is still very simple and only chain feature and without using any price feature.</p></li>
+</ul></li>
+<li><p><strong><span class="math"><em>R</em><sup>2</sup></span> and Pearson</strong></p>
+<p><img src="pearson_r_square.png" alt="image" /></p>
+<p>As the diagram shows, we have the maximum <span class="math"><em>R</em><sup>2</sup></span>=<strong>0.332810699</strong> and minimum <span class="math"><em>R</em><sup>2</sup></span>=<strong>0.006885197</strong>. We can see overall the pearson and the <span class="math"><em>R</em><sup>2</sup></span> are the similar trend while it does not hold for the very first and the very last point. That’s reasonable because we are high pearson does not equal to good feature</p></li>
+</ul></li>
+</ul>
+<h1 id="conclusion">Conclusion</h1>
+<p>Price is always the important factor that impact people buy or sell something. That’s intuitive understanding is confirmed by the layer design experiment. Also, most people tend to buy or sell too much, most likely [0,15]. I think that’s very interesting because we are using the statistic way to analysis the market, people and even try to make some predictions</p>
+<h1 id="appendix">Appendix</h1>
+<ul>
+<li><p><strong>Outlier</strong></p>
+<p>I cannot find obvious outlier in my data. Thus I remove the outlier section</p></li>
+<li><p><strong>Package</strong></p>
+<p>I am using Python to do the analysis. Package includes Numpy, matplotlib. See the question1.py and question2.py (10/24/2018 Attempt) and question3.py (11/30/2018 Attempt) and also the comments for more programing detail</p></li>
+<li><p><strong>Publishing</strong></p>
+<p>I also upload the report in the address: https://github.com/BCD2018/dsproject</p></li>
+</ul>
+<h1 id="reference">Reference</h1>
+<ul>
+<li><p>Blockchain: a graph primer (https://arxiv.org/abs/1708.08749)</p></li>
+</ul>
